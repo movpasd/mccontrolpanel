@@ -1,0 +1,5 @@
+# Python
+**/*.pyc
+
+# Deployment & environment files
+.deployment.json
