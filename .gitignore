@@ -1,5 +1,7 @@
 # Python
 **/*.pyc
+**/*.egg-info/**
+**/__pycache__/**
 
 # Deployment & environment files
 .deployment.json
