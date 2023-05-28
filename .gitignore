@@ -3,5 +3,9 @@
 **/*.egg-info/**
 **/__pycache__/**
 
+# Building
+build/
+dist/
+
 # Deployment & environment files
 .deployment.json

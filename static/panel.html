@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mov's MC Server Control Panel</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+
+    <script src="//unpkg.com/alpinejs" defer></script>
+
+    <script defer>
+      var page = {
+        token: null,
+      };
+
+      /* Get token */
+      let queryParams = new URLSearchParams(window.location.search);
+      if (queryParams.has('token')) {
+        page.token = queryParams.get('token');
+      }
+    </script>
+
+  </head>
+  <body>
+      <h1>Mov's MC Server Control Panel</h1>
+      <p><span>Current token: </span><span x-text="page.token" /></p>
+	<script src="index.js"></script>
+  </body>
+</html>
