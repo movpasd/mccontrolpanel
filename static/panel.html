@@ -5,27 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Mov's MC Server Control Panel</title>
-    <link rel="stylesheet" href="./style.css">
-    <link rel="icon" href="./favicon.ico" type="image/x-icon">
 
-    <script src="//unpkg.com/alpinejs" defer></script>
-
-    <script defer>
-      var page = {
-        token: null,
-      };
-
-      /* Get token */
-      let queryParams = new URLSearchParams(window.location.search);
-      if (queryParams.has('token')) {
-        page.token = queryParams.get('token');
-      }
-    </script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
 
   </head>
-  <body>
-      <h1>Mov's MC Server Control Panel</h1>
-      <p><span>Current token: </span><span x-text="page.token" /></p>
-	<script src="index.js"></script>
+
+  <!-- ---- -->
+
+  <body
+    x-data="
+      {
+        code: null,
+        accessToken: null,
+        response: null,
+        async exchangeCodeForToken() {
+
+          let queryParams = new URLSearchParams(window.location.search);
+
+          if (!queryParams.has('code')) { return; }
+
+          this.code = queryParams.get('code');
+
+          let authTokenResponse = await fetch(
+            'https://movs-mc-server.auth.ap-southeast-1.amazoncognito.com/oauth2/token',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                code: this.code,
+                client_id: '2gdiao3na5h8fkblhdj1k7c9b7',
+                redirect_uri: 'https://mccontrolpanel.movpasd.com/panel.html',
+              }),
+            }
+          );
+          this.response = authTokenResponse;
+
+          if (!authTokenResponse.ok) { return; }
+
+          this.accessToken = (await authTokenResponse.json())['access_token']
+
+        },
+        async triggerTest() {
+          let testTriggerResponse = await fetch(
+            'https://mccontrolpanel.movpasd.com/test',
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${this.accessToken}`,
+              },
+            }
+          );
+          console.log(testTriggerResponse);
+        },
+        async startServer() {
+          let res = await fetch(
+            'https://mccontrolpanel.movpasd.com/startserver',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${this.accessToken}`,
+              },
+            }
+          );
+          this.response = res;
+        },
+        async stopServer() {
+          let res = await fetch(
+            'https://mccontrolpanel.movpasd.com/stopserver',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${this.accessToken}`,
+              },
+            }
+          );
+          this.response = res;
+        },
+      }
+    "
+    x-init="exchangeCodeForToken()"
+  >
+     
+    <h1>Mov's MC Server Control Panel</h1>
+    <p>
+      <span>Current code: </span>
+      <span x-text="code"></span>
+    </p>
+    <p>
+      <span>Current access token: </span>
+      <span x-text="accessToken"></span>
+    </p>
+
+    <div class="error" x-show="!code">Code not found</div>
+    <div class="error" x-show="!accessToken">Token not found</div>
+
+    <textarea
+      style="overflow-y: scroll; height: 200px; width: 300px;"
+      x-text="response"
+    ></textarea>
+
+    <button @click="triggerTest()">Trigger test</button>
+    <button @click="startServer()">Start server</button>
+    <button @click="stopServer()">Stop server</button>
+
   </body>
 </html>
