@@ -17,7 +17,7 @@
       {
         code: null,
         accessToken: null,
-        response: null,
+        response: '(none yet)',
         async exchangeCodeForToken() {
 
           let queryParams = new URLSearchParams(window.location.search);
@@ -25,7 +25,8 @@
           if (!queryParams.has('code')) { return; }
 
           this.code = queryParams.get('code');
-
+          
+          this.response = '...';
           let authTokenResponse = await fetch(
             'https://movs-mc-server.auth.ap-southeast-1.amazoncognito.com/oauth2/token',
             {
@@ -41,14 +42,16 @@
               }),
             }
           );
-          this.response = authTokenResponse;
+          let responseJson = await authTokenResponse.json();
+          this.response = JSON.stringify(responseJson);
 
           if (!authTokenResponse.ok) { return; }
 
-          this.accessToken = (await authTokenResponse.json())['access_token']
+          this.accessToken = responseJson['access_token']
 
         },
         async triggerTest() {
+          this.response = '...';
           let testTriggerResponse = await fetch(
             'https://mccontrolpanel.movpasd.com/test',
             {
@@ -58,9 +61,10 @@
               },
             }
           );
-          console.log(testTriggerResponse);
+          this.response = await testTriggerResponse.text();
         },
         async startServer() {
+          this.response = '...';
           let res = await fetch(
             'https://mccontrolpanel.movpasd.com/startserver',
             {
@@ -70,9 +74,10 @@
               },
             }
           );
-          this.response = res;
+          this.response = await res.text();
         },
         async stopServer() {
+          this.response = '...';
           let res = await fetch(
             'https://mccontrolpanel.movpasd.com/stopserver',
             {
@@ -82,7 +87,7 @@
               },
             }
           );
-          this.response = res;
+          this.response = await res.text();
         },
       }
     "
@@ -90,6 +95,19 @@
   >
      
     <h1>Mov's MC Server Control Panel</h1>
+
+    <p>Welcome to the control panel for Mov's Minecraft server!</p>
+
+    <hr>
+
+    <button @click="triggerTest()">Trigger test</button>
+    <button @click="startServer()">Start server</button>
+    <button @click="stopServer()">Stop server</button>
+
+    <hr>
+
+    <h2>Debug info</h2>
+    
     <p>
       <span>Current code: </span>
       <span x-text="code"></span>
@@ -99,17 +117,10 @@
       <span x-text="accessToken"></span>
     </p>
 
-    <div class="error" x-show="!code">Code not found</div>
-    <div class="error" x-show="!accessToken">Token not found</div>
-
     <textarea
       style="overflow-y: scroll; height: 200px; width: 300px;"
       x-text="response"
     ></textarea>
-
-    <button @click="triggerTest()">Trigger test</button>
-    <button @click="startServer()">Start server</button>
-    <button @click="stopServer()">Stop server</button>
 
   </body>
 </html>
